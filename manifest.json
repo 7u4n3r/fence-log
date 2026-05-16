@@ -1,7 +1,7 @@
 {
-  "name": "GroundLog",
-  "short_name": "GroundLog",
-  "description": "Field log for documenting ground conditions, property events, photos, timestamps, and area-based notes.",
+  "name": "Groundlog",
+  "short_name": "Groundlog",
+  "description": "Mobile field log for any trade",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
