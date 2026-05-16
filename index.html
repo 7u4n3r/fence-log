@@ -6,9 +6,9 @@
 <meta name="theme-color" content="#0d0d0d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Fence Log">
+<meta name="apple-mobile-web-app-title" content="Groundlog">
 <link rel="manifest" href="manifest.json">
-<title>Fence Log</title>
+<title>Groundlog</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -68,7 +68,7 @@
 </head>
 <body>
 <header>
-  <div class="logo">Fence<span>Log</span></div>
+  <div class="logo">Ground<span>Log</span></div>
   <div class="header-actions">
     <button class="btn-ghost" onclick="exportData()">Export</button>
     <button class="btn-ghost" onclick="clearAll()" style="color:#555">Clear</button>
@@ -117,7 +117,7 @@
 </div>
 <div class="toast" id="toast"></div>
 <script>
-const DB_NAME = 'fencelog', DB_VERSION = 1;
+const DB_NAME = 'groundlog', DB_VERSION = 1;
 let db = null;
 
 function openDB() {
@@ -235,7 +235,7 @@ function renderTimeline() {
   const tl = document.getElementById('timeline');
   const count = document.getElementById('entryCount');
   count.textContent = cachedEntries.length + (cachedEntries.length === 1 ? ' entry' : ' entries');
-  if (!cachedEntries.length) { tl.innerHTML = '<div class="empty-state">No entries yet.<br>Log your first fence area above.</div>'; return; }
+  if (!cachedEntries.length) { tl.innerHTML = '<div class="empty-state">No entries yet.<br>Log your first area above.</div>'; return; }
   tl.innerHTML = '';
   cachedEntries.forEach(e => renderCard(e));
 }
@@ -287,7 +287,7 @@ async function exportData() {
   const out = cachedEntries.map(e => ({ id: e.id, timestamp: e.timestamp, area: e.area, note: e.note, photoCount: (e.photoIds||[]).length }));
   const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'fencelog-' + new Date().toISOString().slice(0,10) + '.json'; a.click();
+  const a = document.createElement('a'); a.href = url; a.download = 'groundlog-' + new Date().toISOString().slice(0,10) + '.json'; a.click();
   URL.revokeObjectURL(url); showToast('Exported');
 }
 
