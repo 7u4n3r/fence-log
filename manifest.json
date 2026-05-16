@@ -1,7 +1,7 @@
 {
-  "name": "Fence Log",
-  "short_name": "FenceLog",
-  "description": "Field log for fence work",
+  "name": "GroundLog",
+  "short_name": "GroundLog",
+  "description": "Field log for documenting ground conditions, property events, photos, timestamps, and area-based notes.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
