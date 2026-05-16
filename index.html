@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0d0d0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fence Log">
+<link rel="manifest" href="manifest.json">
+<title>Fence Log</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0d; --surface: #161616; --border: #2a2a2a; --border-active: #444;
+    --text: #e8e8e8; --muted: #666; --accent: #c8a96e; --accent-dim: #8a6e3e;
+    --danger: #c0392b; --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 16px; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  header { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: var(--mono); font-size: 15px; font-weight: 600; letter-spacing: 0.08em; color: var(--accent); text-transform: uppercase; }
+  .logo span { color: var(--muted); font-weight: 400; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .btn-ghost { background: none; border: 1px solid var(--border); color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; padding: 6px 10px; border-radius: 4px; cursor: pointer; text-transform: uppercase; }
+  .btn-ghost:active { background: var(--surface); }
+  .form-section { padding: 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+  .field-group.full { grid-column: 1 / -1; }
+  label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  select, textarea { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: var(--sans); font-size: 16px; padding: 12px 14px; width: 100%; appearance: none; -webkit-appearance: none; outline: none; transition: border-color 0.15s; }
+  select:focus, textarea:focus { border-color: var(--accent-dim); }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+  textarea { resize: none; height: 80px; line-height: 1.5; }
+  .timestamp-display { font-family: var(--mono); font-size: 11px; color: var(--muted); padding: 8px 0 4px; letter-spacing: 0.04em; }
+  .photo-area { margin-bottom: 12px; }
+  .photo-upload-btn { display: flex; align-items: center; gap: 10px; background: var(--bg); border: 1px dashed var(--border-active); border-radius: 4px; padding: 14px; cursor: pointer; width: 100%; color: var(--muted); font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .photo-upload-btn:active { background: #1a1a1a; }
+  .photo-upload-btn svg { flex-shrink: 0; }
+  #photoInput { display: none; }
+  .photo-preview-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .photo-thumb-wrap { position: relative; width: 72px; height: 72px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+  .photo-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-remove { position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.8); border: none; color: #fff; font-size: 14px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; line-height: 1; padding: 0; }
+  .btn-save { width: 100%; background: var(--accent); color: #0d0d0d; border: none; border-radius: 4px; font-family: var(--mono); font-size: 14px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 16px; cursor: pointer; margin-top: 4px; }
+  .btn-save:active { background: var(--accent-dim); color: var(--text); }
+  .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+  .timeline-header { padding: 14px 16px 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .entry-count { color: var(--accent); }
+  .empty-state { padding: 48px 16px; text-align: center; color: var(--muted); font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; line-height: 2; }
+  .entry-card { border-bottom: 1px solid var(--border); padding: 14px 16px; }
+  .entry-meta { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .entry-area { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: rgba(200, 169, 110, 0.1); padding: 3px 8px; border-radius: 3px; border: 1px solid rgba(200, 169, 110, 0.2); }
+  .entry-time { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.04em; text-align: right; line-height: 1.5; }
+  .entry-note { font-size: 14px; line-height: 1.6; color: var(--text); margin-bottom: 10px; }
+  .entry-photos { display: flex; gap: 6px; flex-wrap: wrap; }
+  .entry-photo { width: 80px; height: 80px; border-radius: 3px; object-fit: cover; border: 1px solid var(--border); cursor: pointer; }
+  .entry-delete { background: none; border: none; color: var(--border-active); font-size: 16px; cursor: pointer; padding: 0 0 0 8px; line-height: 1; }
+  .entry-delete:active { color: var(--danger); }
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 100; align-items: center; justify-content: center; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 95vw; max-height: 90vh; object-fit: contain; border-radius: 4px; }
+  .lightbox-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; line-height: 1; padding: 4px; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--accent); color: #0d0d0d; font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 20px; border-radius: 4px; transition: transform 0.2s ease; z-index: 50; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Fence<span>Log</span></div>
+  <div class="header-actions">
+    <button class="btn-ghost" onclick="exportData()">Export</button>
+    <button class="btn-ghost" onclick="clearAll()" style="color:#555">Clear</button>
+  </div>
+</header>
+<div class="form-section">
+  <div class="timestamp-display" id="tsDisplay"></div>
+  <div class="form-row">
+    <div class="field-group">
+      <label for="areaSelect">Area</label>
+      <select id="areaSelect">
+        <option value="Front">Front</option>
+        <option value="Middle">Middle</option>
+        <option value="Back">Back</option>
+      </select>
+    </div>
+    <div class="field-group"><label>&nbsp;</label></div>
+  </div>
+  <div class="field-group full" style="margin-bottom:10px">
+    <label for="noteField">Notes</label>
+    <textarea id="noteField" placeholder="What happened here…"></textarea>
+  </div>
+  <div class="photo-area">
+    <label style="margin-bottom:6px;display:block">Photos</label>
+    <label class="photo-upload-btn" for="photoInput">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <path d="M21 15l-5-5L5 21"/>
+      </svg>
+      Add photos
+    </label>
+    <input type="file" id="photoInput" accept="image/*" multiple capture="environment">
+    <div class="photo-preview-strip" id="previewStrip"></div>
+  </div>
+  <button class="btn-save" id="saveBtn" onclick="saveEntry()">Save Entry</button>
+</div>
+<div class="timeline-header">
+  <span>Log</span>
+  <span class="entry-count" id="entryCount">—</span>
+</div>
+<div id="timeline"></div>
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">x</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const DB_NAME = 'fencelog', DB_VERSION = 1;
+let db = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('entries')) d.createObjectStore('entries', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('photos')) {
+        const ps = d.createObjectStore('photos', { keyPath: 'id' });
+        ps.createIndex('entryId', 'entryId', { unique: false });
+      }
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+
+function idbStore(name, mode) { return db.transaction(name, mode).objectStore(name); }
+function idbGet(store, key) { return new Promise((res, rej) => { const r = idbStore(store).get(key); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+function idbPut(store, val) { return new Promise((res, rej) => { const r = idbStore(store, 'readwrite').put(val); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+function idbDelete(store, key) { return new Promise((res, rej) => { const r = idbStore(store, 'readwrite').delete(key); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
+function idbGetAll(store) { return new Promise((res, rej) => { const r = idbStore(store).getAll(); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+function idbClear(store) { return new Promise((res, rej) => { const r = idbStore(store, 'readwrite').clear(); r.onsuccess = () => res(); r.onerror = () => rej(r.error); }); }
+
+let pendingPhotos = [], cachedEntries = [];
+
+async function init() {
+  try { db = await openDB(); } catch(e) { alert('Storage unavailable. Use a regular browser tab.'); return; }
+  updateTimestamp();
+  setInterval(updateTimestamp, 10000);
+  setupPhotoInput();
+  await loadAndRender();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+function updateTimestamp() {
+  const now = new Date();
+  document.getElementById('tsDisplay').textContent =
+    now.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' }) +
+    ' - ' + now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+}
+
+function formatTime(iso) {
+  const d = new Date(iso);
+  return [d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }), d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' })];
+}
+
+function setupPhotoInput() {
+  document.getElementById('photoInput').addEventListener('change', function(e) {
+    Array.from(e.target.files).forEach(file => {
+      compressImage(file, 1200, 0.82).then(blob => { pendingPhotos.push({ blob, objectUrl: URL.createObjectURL(blob) }); renderPreview(); });
+    });
+    this.value = '';
+  });
+}
+
+function compressImage(file, maxDim, quality) {
+  return new Promise(resolve => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) { const r = Math.min(maxDim/width, maxDim/height); width = Math.round(width*r); height = Math.round(height*r); }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob => resolve(blob || file), 'image/jpeg', quality);
+    };
+    img.onerror = () => resolve(file);
+    img.src = url;
+  });
+}
+
+function renderPreview() {
+  const strip = document.getElementById('previewStrip');
+  strip.innerHTML = '';
+  pendingPhotos.forEach((p, i) => {
+    const wrap = document.createElement('div'); wrap.className = 'photo-thumb-wrap';
+    const img = document.createElement('img'); img.src = p.objectUrl;
+    const btn = document.createElement('button'); btn.className = 'photo-remove'; btn.textContent = 'x'; btn.onclick = () => removePhoto(i);
+    wrap.appendChild(img); wrap.appendChild(btn); strip.appendChild(wrap);
+  });
+}
+
+function removePhoto(i) { URL.revokeObjectURL(pendingPhotos[i].objectUrl); pendingPhotos.splice(i, 1); renderPreview(); }
+
+async function saveEntry() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  const id = Date.now(), timestamp = new Date().toISOString();
+  const area = document.getElementById('areaSelect').value;
+  const note = document.getElementById('noteField').value.trim();
+  const photoIds = [];
+  for (let i = 0; i < pendingPhotos.length; i++) {
+    const pid = id + '_' + i;
+    await idbPut('photos', { id: pid, entryId: id, blob: pendingPhotos[i].blob });
+    photoIds.push(pid);
+  }
+  await idbPut('entries', { id, timestamp, area, note, photoIds });
+  pendingPhotos.forEach(p => URL.revokeObjectURL(p.objectUrl));
+  pendingPhotos = []; renderPreview();
+  document.getElementById('noteField').value = '';
+  await loadAndRender(); showToast('Entry saved'); window.scrollTo({ top: 0 });
+  btn.disabled = false; btn.textContent = 'Save Entry';
+}
+
+async function loadAndRender() {
+  const all = await idbGetAll('entries');
+  cachedEntries = all.sort((a, b) => b.id - a.id);
+  renderTimeline();
+}
+
+function renderTimeline() {
+  const tl = document.getElementById('timeline');
+  const count = document.getElementById('entryCount');
+  count.textContent = cachedEntries.length + (cachedEntries.length === 1 ? ' entry' : ' entries');
+  if (!cachedEntries.length) { tl.innerHTML = '<div class="empty-state">No entries yet.<br>Log your first fence area above.</div>'; return; }
+  tl.innerHTML = '';
+  cachedEntries.forEach(e => renderCard(e));
+}
+
+function renderCard(entry) {
+  const tl = document.getElementById('timeline');
+  const [date, time] = formatTime(entry.timestamp);
+  const card = document.createElement('div'); card.className = 'entry-card'; card.id = 'entry-' + entry.id;
+  const noteHtml = entry.note ? '<div class="entry-note">' + escHtml(entry.note) + '</div>' : '';
+  card.innerHTML = '<div class="entry-meta"><span class="entry-area">' + entry.area + '</span><div style="display:flex;align-items:center;gap:4px"><div class="entry-time">' + date + '<br>' + time + '</div><button class="entry-delete" title="Delete">x</button></div></div>' + noteHtml + '<div class="entry-photos" id="photos-' + entry.id + '"></div>';
+  card.querySelector('.entry-delete').addEventListener('click', () => deleteEntry(entry.id));
+  tl.appendChild(card);
+  if (entry.photoIds && entry.photoIds.length) loadPhotosForCard(entry.id, entry.photoIds);
+}
+
+async function loadPhotosForCard(entryId, photoIds) {
+  const strip = document.getElementById('photos-' + entryId);
+  if (!strip) return;
+  for (const pid of photoIds) {
+    try {
+      const record = await idbGet('photos', pid);
+      if (!record) continue;
+      const url = URL.createObjectURL(record.blob);
+      const img = document.createElement('img'); img.className = 'entry-photo'; img.src = url; img.alt = '';
+      img.addEventListener('click', () => openLightbox(url));
+      strip.appendChild(img);
+    } catch(e) {}
+  }
+}
+
+function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function deleteEntry(id) {
+  const entry = cachedEntries.find(e => e.id === id);
+  if (entry && entry.photoIds) for (const pid of entry.photoIds) await idbDelete('photos', pid);
+  await idbDelete('entries', id);
+  await loadAndRender();
+}
+
+async function clearAll() {
+  if (!cachedEntries.length) return;
+  if (!confirm('Delete all entries and photos? Cannot be undone.')) return;
+  await idbClear('entries'); await idbClear('photos');
+  cachedEntries = []; renderTimeline(); showToast('Cleared');
+}
+
+async function exportData() {
+  if (!cachedEntries.length) { showToast('Nothing to export'); return; }
+  const out = cachedEntries.map(e => ({ id: e.id, timestamp: e.timestamp, area: e.area, note: e.note, photoCount: (e.photoIds||[]).length }));
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'fencelog-' + new Date().toISOString().slice(0,10) + '.json'; a.click();
+  URL.revokeObjectURL(url); showToast('Exported');
+}
+
+function openLightbox(src) { document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').classList.add('open'); }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+init();
+</script>
+</body>
+</html>
